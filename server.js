@@ -17,7 +17,7 @@ app.use(express.json());
 async function connect_to_db() {
     try {
         await client.connect();
-        console.log('Connected to Data Base');
+        console.log('Connected to Data Base.');
         db = client.db('inventory_db');
         collection = db.collection('products');
     } catch (err) {
@@ -45,6 +45,18 @@ app.post('/api/items', async (req, res) => {
     } catch (err) {
         console.error('Error adding item:', err);
         res.status(500).json({ error: 'Failed to add item' });
+    }
+});
+
+app.delete('/api/items/:item_id', async (req, res) => {
+    try {
+        const delID = req.params.item_id;
+        await collection.deleteOne({ item_id: delID });
+
+        res.status(200).json({ message: 'Item deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting item:', err);
+        res.status(500).json({ error: 'Failed to delete item' });
     }
 });
 
