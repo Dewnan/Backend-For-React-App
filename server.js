@@ -5,22 +5,46 @@ const cors = require('cors');
 const app = express();
 const port = 5000;
 
-const uri = 'mongodb+srv://username:passwrod@my-db.fkl0p.mongodb.net/?retryWrites=true&w=majority&appName=my-db';
+const uri = 'mongodb+srv://dewnan:Dewnan2003@my-db.fkl0p.mongodb.net/?retryWrites=true&w=majority&appName=my-db';
 const client = new MongoClient(uri);
-const db = client.db('inventory_db');
-const collection = db.collection('products');
+
+let db;
+let collection;
 
 app.use(cors());
+app.use(express.json());
+
+async function connect_to_db() {
+    try {
+        await client.connect();
+        console.log('Connected to Data Base');
+        db = client.db('inventory_db');
+        collection = db.collection('products');
+    } catch (err) {
+        console.error('Failed to connect to database:', err);
+    }
+}
+
+connect_to_db().catch(console.error);
 
 app.get('/api/items', async (req, res) => {
     try {
-        await client.connect();
-        const db = client.db('inventory_db');
-        const collection = db.collection('products');
         const items = await collection.find({}).toArray();
         res.json(items);
-    } finally {
-        await client.close();
+    } catch (err) {
+        console.error('Error fetching items:', err);
+        res.status(500).json({ error: 'Failed to fetch items' });
+    }
+});
+
+app.post('/api/items', async (req, res) => {
+    try {
+        const newItem = req.body;
+        const result = await collection.insertOne(newItem);
+        res.status(201).json({ message: 'Item added successfully', id: result.insertedId });
+    } catch (err) {
+        console.error('Error adding item:', err);
+        res.status(500).json({ error: 'Failed to add item' });
     }
 });
 
