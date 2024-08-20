@@ -19,8 +19,9 @@ async function connect_to_db() {
     try {
         await client.connect();
         console.log('Connected to Data Base.');
-        db = client.db('inventory_db');
+        db = client.db('my-stor-app');
         ItemCollection = db.collection('products');
+        CustomerCollection = db.collection('customers')
     } catch (err) {
         console.error('Failed to connect to database:', err);
     }
@@ -29,7 +30,7 @@ connect_to_db().catch(console.error);
 
 app.get('/api/items', async (req, res) => {
     try {
-        const items = await collection.find({}).toArray();
+        const items = await ItemCollection.find({}).toArray();
         res.json(items);
     } catch (err) {
         console.error('Error fetching items:', err);
@@ -40,7 +41,7 @@ app.get('/api/items', async (req, res) => {
 app.post('/api/items', async (req, res) => {
     try {
         const newItem = req.body;
-        const result = await collection.insertOne(newItem);
+        const result = await ItemCollection.insertOne(newItem);
         res.status(201).json({ message: 'Item added successfully', id: result.insertedId });
     } catch (err) {
         console.error('Error adding item:', err);
@@ -51,7 +52,7 @@ app.post('/api/items', async (req, res) => {
 app.delete('/api/items/:item_id', async (req, res) => {
     try {
         const delID = req.params.item_id;
-        await collection.deleteOne({ item_id: delID });
+        await ItemCollection.deleteOne({ item_id: delID });
 
         res.status(200).json({ message: 'Item deleted successfully' });
     } catch (err) {
@@ -62,7 +63,7 @@ app.delete('/api/items/:item_id', async (req, res) => {
 
 app.get('/api/customers', async (req, res) => {
     try {
-        const customers = await collection.find({}).toArray();
+        const customers = await CustomerCollection.find({}).toArray();
         res.json(customers);
     } catch (err) {
         console.error('Error fetching customers:', err);
@@ -73,7 +74,7 @@ app.get('/api/customers', async (req, res) => {
 app.post('/api/customers', async (req, res) => {
     try {
         const newCustomer = req.body;
-        const result = await collection.insertOne(newCustomer);
+        const result = await CustomerCollection.insertOne(newCustomer);
         res.status(201).json({ message: 'Customer added successfully', id: result.insertedId });
     } catch (err) {
         console.error('Error adding customer:', err);
@@ -84,7 +85,7 @@ app.post('/api/customers', async (req, res) => {
 app.delete('/api/customers/:customer_id', async (req, res) => {
     try {
         const CuslID = req.params.customer_id;
-        await collection.deleteOne({ customer_id: CuslID });
+        await CustomerCollection.deleteOne({ customer_id: CuslID });
 
         res.status(200).json({ message: 'Customers deleted successfully' });
     } catch (err) {
