@@ -9,7 +9,8 @@ const uri = 'mongodb+srv://dewnan:Dewnan2003@my-db.fkl0p.mongodb.net/?retryWrite
 const client = new MongoClient(uri);
 
 let db;
-let collection;
+let ItemCollection;
+let CustomerCollection;
 
 app.use(cors());
 app.use(express.json());
@@ -19,12 +20,11 @@ async function connect_to_db() {
         await client.connect();
         console.log('Connected to Data Base.');
         db = client.db('inventory_db');
-        collection = db.collection('products');
+        ItemCollection = db.collection('products');
     } catch (err) {
         console.error('Failed to connect to database:', err);
     }
 }
-
 connect_to_db().catch(console.error);
 
 app.get('/api/items', async (req, res) => {
@@ -60,6 +60,39 @@ app.delete('/api/items/:item_id', async (req, res) => {
     }
 });
 
+app.get('/api/customers', async (req, res) => {
+    try {
+        const customers = await collection.find({}).toArray();
+        res.json(customers);
+    } catch (err) {
+        console.error('Error fetching customers:', err);
+        res.status(500).json({ error: 'Failed to fetch customer' });
+    }
+});
+
+app.post('/api/customers', async (req, res) => {
+    try {
+        const newCustomer = req.body;
+        const result = await collection.insertOne(newCustomer);
+        res.status(201).json({ message: 'Customer added successfully', id: result.insertedId });
+    } catch (err) {
+        console.error('Error adding customer:', err);
+        res.status(500).json({ error: 'Failed to add customer' });
+    }
+});
+
+app.delete('/api/customers/:customer_id', async (req, res) => {
+    try {
+        const CuslID = req.params.customer_id;
+        await collection.deleteOne({ customer_id: CuslID });
+
+        res.status(200).json({ message: 'Customers deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting customer:', err);
+        res.status(500).json({ error: 'Failed to delete customer' });
+    }
+});
+
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on port: ${port}`);
 });
